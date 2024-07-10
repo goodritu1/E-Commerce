@@ -14,96 +14,83 @@ router.get('/', async (req, res) => {
          as :'products'
          }],
     });
-    res.json(categories);
+    res.json(categoryData);
   } catch (err) {
     console.error(err);
-    res.status(500).json({message: 'Error finding categories'});
+    res.status(400).json({message: 'Error finding categories'});
     }
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   // find one category by its `id` value
   // be sure to include its associated Products
-    Category.findOne({
-      where: {
-        id: req.params.id
-      },
-      include: [{
-        model: Product
-      }]
-    })
-   .then(category => {
-      res.json(category);
-    })
-   .catch(err => {
+    try{
+      const categoryData = await Category.findByPk(req.params.id, {
+        include: [{
+           model: Product,
+           as :'products'
+           }],
+      })  
+      res.json(categoryData);
+    } catch (err) {
       console.error(err);
-      res.status(500).json({ message: 'Error finding category' });
-    });
-  });
+      res.status(400).json({message: 'Error finding category'});
+      }
+});
+
   
 
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   // create a new category
- 
-    Category.create(req.body)
-      .then(newCategory => {
-        res.json(newCategory);
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).json({ message: 'Error creating category' });
-      });
+  try {
+    const categoryData = await Category.create(req.body, {
+      include: [{
+         model: Product,
+         as :'products'
+         }],
+    });
+    res.json(categoryData);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({message: 'Error creating category'});
+    }
   });
+  
+ 
 
-
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   // update a category by its `id` value
-    Category.findByPk(req.params.id)
-      .then(category => {
-        if (!category) {
-          res.status(404).json({ message: 'Category not found' });
-        } else {
-          category.update(req.body)
-            .then(updatedCategory => {
-              res.json(updatedCategory);
-            })
-            .catch(err => {
-              console.error(err);
-              res.status(500).json({ message: 'Error updating category' });
-            });
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).json({ message: 'Error finding category' });
-      });
-  });
+  try {
+    const categoryData = await Category.update(req.body, {
+      where: {
+        id: req.params.id
+      }
+    })
+    res.json(categoryData);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({message: 'Error updating category'});
+  }
+});
 
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   // delete a category by its `id` value
+ try{
+  const categoryData = await Category.destroy({
+    where: {
+      id: req.params.id
+    }
+  })
+  res.json(categoryData);
+} catch (err) {
+  console.error(err);
+  res.status(400).json({message: 'Error deleting category'});
+}
+ });
+
  
-    Category.findByPk(req.params.id)
-      .then(category => {
-        if (!category) {
-          res.status(404).json({ message: 'Category not found' });
-        } else {
-          category.destroy()
-            .then(() => {
-              res.json({ message: 'Category deleted successfully' });
-            })
-            .catch(err => {
-              console.error(err);
-              res.status(500).json({ message: 'Error deleting category' });
-            });
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        res.status(500).json({ message: 'Error finding category' });
-      });
-  });
   
 
 
