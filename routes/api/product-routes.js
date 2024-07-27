@@ -4,15 +4,51 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 // The `/api/products` endpoint
 
 // get all products
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   // find all products
   // be sure to include its associated Category and Tag data
+  try{
+    const productData = await Product.findAll({
+      include: [{
+         model: Category,
+         as: 'category'
+         },
+         {
+         model: Tag,
+         as: 'tags'
+         }]
+    });
+    res.json(productData);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({message: 'Error finding products'});
+
+  }
 });
 
 // get one product
-router.get('/:id', (req, res) => {
-  // find a single product by its `id`
-  // be sure to include its associated Category and Tag data
+router.get('/:id', async (req, res) => {
+  try {
+    const productData = await Product.findByPk(req.params.id, {
+      include: [{
+        model: Category,
+        as: 'category'
+        
+      },
+      {
+        model: Tag,
+        as: 'tags'
+      }]
+    });
+    if (productData) {
+      res.json(productData);
+    } else {
+      res.status(404).json({ message: 'No product found' });
+    }
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error finding product' });
+  }
 });
 
 // create new product
@@ -28,7 +64,7 @@ router.post('/', (req, res) => {
   Product.create(req.body)
     .then((product) => {
       // if there's product tags, we need to create pairings to bulk create in the ProductTag model
-      if (req.body.tagIds.length) {
+      if (req.body.tagIds && req.body.tagIds.length) {
         const productTagIdArr = req.body.tagIds.map((tag_id) => {
           return {
             product_id: product.id,
@@ -49,6 +85,7 @@ router.post('/', (req, res) => {
 
 // update product
 router.put('/:id', (req, res) => {
+  
   // update product data
   Product.update(req.body, {
     where: {
@@ -92,8 +129,20 @@ router.put('/:id', (req, res) => {
     });
 });
 
+
 router.delete('/:id', (req, res) => {
   // delete one product by its `id` value
+  router.delete('/:id', (req, res) => {
+    const id = req.params.id;
+    // Assuming you have a `products` array or database
+    const productIndex = products.findIndex((product) => product.id === id);
+    if (productIndex!== -1) {
+      products.splice(productIndex, 1);
+      res.status(200).send(`Product with id ${id} deleted successfully`);
+    } else {
+      res.status(404).send(`Product with id ${id} not found`);
+    }
+  });
 });
 
 module.exports = router;
