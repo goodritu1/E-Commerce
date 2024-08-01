@@ -130,19 +130,22 @@ router.put('/:id', (req, res) => {
 });
 
 
-router.delete('/:id', (req, res) => {
-  // delete one product by its `id` value
-  router.delete('/:id', (req, res) => {
-    const id = req.params.id;
-    // Assuming you have a `products` array or database
-    const productIndex = products.findIndex((product) => product.id === id);
-    if (productIndex!== -1) {
-      products.splice(productIndex, 1);
-      res.status(200).send(`Product with id ${id} deleted successfully`);
-    } else {
-      res.status(404).send(`Product with id ${id} not found`);
-    }
-  });
+router.delete('/:id', async (req, res) => {
+  try {
+    const data = await Product.destroy({
+      where: {
+        id: req.params.id
+      }
+    })
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({message: 'Error deleting product'});
+
+  }
 });
+  // delete one product by its `id` value
+  
+    
 
 module.exports = router;
